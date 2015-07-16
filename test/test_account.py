@@ -1,11 +1,19 @@
-from nose.case import Test
-from src.account import Account
+import unittest
 
-__author__ = 'krzysztofduda'
+from src.account import Account, NoFundsAvailableException
 
-@Test
-class withdraw_funds_native_client():
-    account = Account()
-    account.withdrawFunds(amount=0, native_client=True)
-    account.withdrawFunds(amount=200, native_client=True)
-    account.withdrawFunds(amount=750, native_client=True)
+
+class TestAccount(unittest.TestCase):
+
+    def test_withdrawFunds_smallAmount_nativeClient(self):
+        account = Account(1000)
+        self.assertEquals(account.withdrawFunds(amount=100, native_client=True), [100])
+    def test_withdrawFunds_bigAmount_nativeClient(self):
+        account = Account(1000)
+        self.assertEquals(account.withdrawFunds(amount=999, native_client=True), [200, 200, 200, 200, 100, 50, 20, 20])
+    def test_withdrawFunds_mediumAmount_otherClient(self):
+        account = Account(1000)
+        self.assertEquals(account.withdrawFunds(amount=450, native_client=False), [200, 200, 50])
+    def test_withdrawFunds_bigAmount_otherClient(self):
+        account = Account(1000)
+        self.assertRaises(NoFundsAvailableException, account.withdrawFunds, amount=999, native_client=False)
